@@ -8,7 +8,7 @@ In this lecture, we'll look at correlation,  autocorrelation and partial autocor
 ## Objectives
 
 You will be able to:
-- Understand correlation in Time Series
+- Describe correlation in Time Series
 - Plot and discuss the autocorrelation function (ACF) for a time-series 
 - Plot and discuss the partial autocorrelation function (PACF) for a time-series 
 - Interpret ACF and PACF and Identify use cases both functions
@@ -104,10 +104,96 @@ gtrends.head()
 
 
 ```python
-gtrends.columns = ['Month', 'Diet', 'Gym', 'Finance']
-gtrends.Month = pd.to_datetime(gtrends.Month)
-gtrends.set_index('Month', inplace=True)
+gtrends.info()
 ```
+
+    <class 'pandas.core.frame.DataFrame'>
+    RangeIndex: 179 entries, 0 to 178
+    Data columns (total 4 columns):
+    Month                   179 non-null object
+    diet: (Worldwide)       179 non-null int64
+    gym: (Worldwide)        179 non-null int64
+    finance: (Worldwide)    179 non-null int64
+    dtypes: int64(3), object(1)
+    memory usage: 5.7+ KB
+
+
+
+```python
+gtrends.columns = ['Month', 'Diet', 'Gym', 'Finance']
+gtrends.Month = pd.to_datetime(gtrends.Month) # convert month column to datetime
+gtrends.set_index('Month', inplace=True)
+gtrends.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Diet</th>
+      <th>Gym</th>
+      <th>Finance</th>
+    </tr>
+    <tr>
+      <th>Month</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2004-01-01</th>
+      <td>100</td>
+      <td>31</td>
+      <td>47</td>
+    </tr>
+    <tr>
+      <th>2004-02-01</th>
+      <td>77</td>
+      <td>27</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <th>2004-03-01</th>
+      <td>75</td>
+      <td>25</td>
+      <td>47</td>
+    </tr>
+    <tr>
+      <th>2004-04-01</th>
+      <td>73</td>
+      <td>24</td>
+      <td>47</td>
+    </tr>
+    <tr>
+      <th>2004-05-01</th>
+      <td>75</td>
+      <td>23</td>
+      <td>44</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
 
 
 ```python
@@ -116,7 +202,7 @@ plt.xlabel('Year', fontsize=14);
 ```
 
 
-![png](index_files/index_8_0.png)
+![png](index_files/index_9_0.png)
 
 
 These time series seem to exhibit some seasonality as well. Do you see what's happening? Especially for "Diet" and "Gym" there seems to be a peak in the beginning of each year. The famous New Year's Resolutions!
@@ -180,14 +266,163 @@ gtrends.corr()
 
 
 
+
+```python
+gtrends.index
+```
+
+
+
+
+    DatetimeIndex(['2004-01-01', '2004-02-01', '2004-03-01', '2004-04-01',
+                   '2004-05-01', '2004-06-01', '2004-07-01', '2004-08-01',
+                   '2004-09-01', '2004-10-01',
+                   ...
+                   '2018-02-01', '2018-03-01', '2018-04-01', '2018-05-01',
+                   '2018-06-01', '2018-07-01', '2018-08-01', '2018-09-01',
+                   '2018-10-01', '2018-11-01'],
+                  dtype='datetime64[ns]', name='Month', length=179, freq=None)
+
+
+
 Interestingly, The correlations do not seem to be big, and have negative signs. But when we look at the plots, there is clearly some similar movements. What are we doing wrong?
 
 Remember how we said that we want to make our time series **stationary**? This is where you can show off your detrending skills! Turns out you can more easily find out if time series are correlated if you **detrend** them first. Let's use differencing to detrend these time series and then calculate the correlation again!
 
 
 ```python
-gtrends_diff = gtrends.diff(periods=1)
+gtrends_diff = gtrends.diff(periods=1) # subtract 1 from your default period
 ```
+
+
+```python
+gtrends_diff.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Diet</th>
+      <th>Gym</th>
+      <th>Finance</th>
+    </tr>
+    <tr>
+      <th>Month</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2004-01-01</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2004-02-01</th>
+      <td>-23.0</td>
+      <td>-4.0</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>2004-03-01</th>
+      <td>-2.0</td>
+      <td>-2.0</td>
+      <td>-2.0</td>
+    </tr>
+    <tr>
+      <th>2004-04-01</th>
+      <td>-2.0</td>
+      <td>-1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2004-05-01</th>
+      <td>2.0</td>
+      <td>-1.0</td>
+      <td>-3.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+gtrends_diff.corr()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Diet</th>
+      <th>Gym</th>
+      <th>Finance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Diet</th>
+      <td>1.000000</td>
+      <td>0.793339</td>
+      <td>0.395105</td>
+    </tr>
+    <tr>
+      <th>Gym</th>
+      <td>0.793339</td>
+      <td>1.000000</td>
+      <td>0.341564</td>
+    </tr>
+    <tr>
+      <th>Finance</th>
+      <td>0.395105</td>
+      <td>0.341564</td>
+      <td>1.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
 
 
 ```python
@@ -196,7 +431,7 @@ plt.xlabel('Year', fontsize=14);
 ```
 
 
-![png](index_files/index_13_0.png)
+![png](index_files/index_17_0.png)
 
 
 
@@ -268,12 +503,7 @@ You can use the `.shift` function in pandas to shift the index forward, or backw
 
 ```python
 diet = gtrends[['Diet']]
-```
-
-
-```python
-diet_shift_1 = diet.shift(periods=1)
-diet_shift_1.head()
+diet.head()
 ```
 
 
@@ -298,6 +528,68 @@ diet_shift_1.head()
     <tr style="text-align: right;">
       <th></th>
       <th>Diet</th>
+    </tr>
+    <tr>
+      <th>Month</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2004-01-01</th>
+      <td>100</td>
+    </tr>
+    <tr>
+      <th>2004-02-01</th>
+      <td>77</td>
+    </tr>
+    <tr>
+      <th>2004-03-01</th>
+      <td>75</td>
+    </tr>
+    <tr>
+      <th>2004-04-01</th>
+      <td>73</td>
+    </tr>
+    <tr>
+      <th>2004-05-01</th>
+      <td>75</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+diet_shift_1 = diet.shift(periods=1)
+diet_shift_1.rename(columns={"Diet":"Diet_1"}, inplace=True)
+diet_shift_1.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Diet_1</th>
     </tr>
     <tr>
       <th>Month</th>
@@ -334,7 +626,73 @@ diet_shift_1.head()
 
 ```python
 lag_1= pd.concat([diet_shift_1, diet], axis=1)
+lag_1.head()
+```
 
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Diet_1</th>
+      <th>Diet</th>
+    </tr>
+    <tr>
+      <th>Month</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2004-01-01</th>
+      <td>NaN</td>
+      <td>100</td>
+    </tr>
+    <tr>
+      <th>2004-02-01</th>
+      <td>100.0</td>
+      <td>77</td>
+    </tr>
+    <tr>
+      <th>2004-03-01</th>
+      <td>77.0</td>
+      <td>75</td>
+    </tr>
+    <tr>
+      <th>2004-04-01</th>
+      <td>75.0</td>
+      <td>73</td>
+    </tr>
+    <tr>
+      <th>2004-05-01</th>
+      <td>73.0</td>
+      <td>75</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
 lag_1.corr()
 ```
 
@@ -359,13 +717,13 @@ lag_1.corr()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Diet</th>
+      <th>Diet_1</th>
       <th>Diet</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>Diet</th>
+      <th>Diet_1</th>
       <td>1.000000</td>
       <td>0.624862</td>
     </tr>
@@ -390,12 +748,12 @@ lag_1.plot(figsize=(18,6))
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x120be0a58>
+    <matplotlib.axes._subplots.AxesSubplot at 0x1c1fceb8d0>
 
 
 
 
-![png](index_files/index_22_1.png)
+![png](index_files/index_27_1.png)
 
 
 You can see that the "lag 1 autocorrelation" is 0.62. Let's look at lag 2:
@@ -403,7 +761,7 @@ You can see that the "lag 1 autocorrelation" is 0.62. Let's look at lag 2:
 
 ```python
 diet_shift_2 = diet.shift(periods=2)
-
+diet_shift_2.rename(columns={"Diet":"Diet_2"}, inplace=True)
 lag_2= pd.concat([diet_shift_2, diet], axis=1)
 
 lag_2.corr()
@@ -430,13 +788,13 @@ lag_2.corr()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Diet</th>
+      <th>Diet_2</th>
       <th>Diet</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>Diet</th>
+      <th>Diet_2</th>
       <td>1.000000</td>
       <td>0.537913</td>
     </tr>
@@ -458,6 +816,8 @@ Now, how about a lag 12 autocorrelation?
 
 ```python
 diet_shift_12 = diet.shift(periods=12)
+diet_shift_12.rename(columns={"Diet":"Diet_12"}, inplace=True)
+
 
 lag_12= pd.concat([diet_shift_12, diet], axis=1)
 
@@ -485,13 +845,13 @@ lag_12.corr()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Diet</th>
+      <th>Diet_12</th>
       <th>Diet</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>Diet</th>
+      <th>Diet_12</th>
       <td>1.000000</td>
       <td>0.754955</td>
     </tr>
@@ -516,12 +876,12 @@ lag_12.plot(figsize=(18,6))
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x11fc33198>
+    <matplotlib.axes._subplots.AxesSubplot at 0x1c1fce7828>
 
 
 
 
-![png](index_files/index_29_1.png)
+![png](index_files/index_34_1.png)
 
 
 ## The Autocorrelation Function
@@ -541,7 +901,7 @@ pd.plotting.autocorrelation_plot(diet);
 ```
 
 
-![png](index_files/index_33_0.png)
+![png](index_files/index_38_0.png)
 
 
 Look at that, you can clearly identify spikes for lags of multiples of 12. However, The dotted lines in the plot tell you about the statistical significance of the correlation. For these time series, you can say that 'Diet' is definitely autocorrelated for lags of twelve months and 24 months, but for some later lags the result is not significant.
@@ -555,6 +915,66 @@ diet_diff = gtrends_diff[["Diet"]].dropna()
 
 
 ```python
+diet_diff.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Diet</th>
+    </tr>
+    <tr>
+      <th>Month</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2004-02-01</th>
+      <td>-23.0</td>
+    </tr>
+    <tr>
+      <th>2004-03-01</th>
+      <td>-2.0</td>
+    </tr>
+    <tr>
+      <th>2004-04-01</th>
+      <td>-2.0</td>
+    </tr>
+    <tr>
+      <th>2004-05-01</th>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>2004-06-01</th>
+      <td>-8.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
 plt.figure(figsize=(12,6))
 pd.plotting.autocorrelation_plot(diet_diff)
 ```
@@ -562,12 +982,12 @@ pd.plotting.autocorrelation_plot(diet_diff)
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x1c24083dd8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x11678d3c8>
 
 
 
 
-![png](index_files/index_37_1.png)
+![png](index_files/index_43_1.png)
 
 
 You can see that the ACF here seems a little more *stable*, revolving around 0, which is no surprise. Additionally, the autocorrelation for multiples of 12 seems concistently statistically significant, while it decays for longer time lags!
@@ -589,7 +1009,7 @@ plot_pacf(diet, lags = 100);
 ```
 
 
-![png](index_files/index_42_0.png)
+![png](index_files/index_48_0.png)
 
 
 The partial autocorrelation function can be interpreted as a regression of the series against its past lags. It helps you come up with a possible order for the auto regressive term. The terms can be interpreted the same way as a standard linear regression, that is the contribution of a change in that particular lag while holding others constant. The use of PACF will become more clear when we will be looking at some more "advanced" time series next!
@@ -607,7 +1027,7 @@ plot_acf(diet, lags = 100);
 ```
 
 
-![png](index_files/index_45_0.png)
+![png](index_files/index_51_0.png)
 
 
 Note that the plots (and especially the confidence bands) are slightly different. Feel free to have a loot at [this stackoverflow post](https://stackoverflow.com/questions/36038927/whats-the-difference-between-pandas-acf-and-statsmodel-acf) if you want to dig deeper.
